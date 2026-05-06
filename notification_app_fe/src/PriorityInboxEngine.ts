@@ -1,11 +1,5 @@
-import { Log } from "../../logging_middleware/Log";
-
-export interface Notification {
-  ID: string | number;
-  Type: string;
-  Message: string;
-  Timestamp: string | number;
-}
+import { Log } from "../../logging_middleware/logger";
+import type { Notification } from "./types/notification";
 
 const TYPE_WEIGHTS: Record<string, number> = {
   Placement: 3000,
@@ -34,8 +28,10 @@ export const getTopNotifications = async (limit: number) => {
 
     if (!response.ok) throw new Error("Failed to fetch notifications");
 
-    const data = await response.json();
-    const notifications: Notification[] = data.notifications || [];
+    const payload = await response.json();
+    const notifications: Notification[] = Array.isArray(payload)
+      ? payload
+      : payload.notifications || payload.data || [];
 
     const sorted = notifications.sort((a, b) => {
       const weightA = TYPE_WEIGHTS[a.Type] || 0;
